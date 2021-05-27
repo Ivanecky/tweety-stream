@@ -28,12 +28,12 @@ client = pymongo.MongoClient(f"mongodb+srv://sgi_mongo_usr:{mongo_pwd}@sgicluste
 # Create database
 db = client['nba']
 # Create collection for the game 
-poffD1 = db['poffD1']
+playoffs = db['playoffs']
 
 def main():
     class StdOutListener(StreamListener):
         def on_data(self, data):
-            db.gswMem.insert_one(json.loads(data))
+            db.playoffs.insert_one(json.loads(data))
             print(json.loads(data))
             return True
         def on_error(self, status):
@@ -43,7 +43,7 @@ def main():
     auth = OAuthHandler(api_key, api_secret)
     auth.set_access_token(access_key, access_token)
     stream = Stream(auth, l)
-    stream.filter(track="NBA")
+    stream.filter(track=["NBA", "nba"], languages=["en"])
 
 if __name__ == "__main__":
     main() 
