@@ -7,6 +7,16 @@ import yaml
 import pymongo
 import json
 
+# Classes
+class StdOutListener(StreamListener):
+    def on_data(self, data):
+        db.playoffs.insert_one(json.loads(data))
+        print(json.loads(data))
+        return True
+    def on_error(self, status):
+        print (status)
+
+# Read secrets from YAML
 with open(r'/Users/samivanecky/Git/tweety-stream/yaml/api.yaml') as file:
     api_yaml = yaml.full_load(file)
 
@@ -30,19 +40,12 @@ db = client['nba']
 # Create collection for the game 
 playoffs = db['playoffs']
 
+# Main program
 def main():
-    class StdOutListener(StreamListener):
-        def on_data(self, data):
-            db.playoffs.insert_one(json.loads(data))
-            print(json.loads(data))
-            return True
-        def on_error(self, status):
-            print (status)
-
     l = StdOutListener()
     auth = OAuthHandler(api_key, api_secret)
     auth.set_access_token(access_key, access_token)
-    stream = Stream(auth, l)
+    stream = Stream(auth, l, max_retries = 5)
     stream.filter(track=["NBA", "nba"], languages=["en"])
 
 if __name__ == "__main__":
